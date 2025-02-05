@@ -25,7 +25,42 @@ const monstersData = [
   { "name": "Lobo Errante", "time": 60, "instances": 1, "location": "prt_maze01" },
   { "name": "Lobo Errante", "time": 32, "instances": 1, "location": "prt_maze03" },
   { "name": "Lobo Errante", "time": 30, "instances": 1, "location": "moc_fild03" },
-  { "name": "Donzela Verde", "time": 50, "instances": 5, "location": "lou_dun03" }
+  { "name": "Donzela Verde", "time": 50, "instances": 5, "location": "lou_dun03" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "morocc" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "alberta" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "aldebaran" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "geffen" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "payon" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "comodo" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "izlude" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "yuno" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "umbala" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "eldoria" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "zero" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "prontera" },
+  { "name": "Rosa Selvagem", "time": 120, "instances": 5, "location": "louyang" },
+
+  { "name": "Sussurro", "time": 30, "instances": 1, "location": "gl_cas02" },
+  { "name": "Sussurro", "time": 30, "instances": 1, "location": "pay_dun03" },
+
+  { "name": "Ungoliant", "time": 60, "instances": 2, "location": "ein_dun01" },
+
+  { "name": "Libélula", "time": 60, "instances": 1, "location": "moc_fild18" },
+
+  { "name": "Sapo Cururu", "time": 60, "instances": 1, "location": "cmd_fild03" },
+  { "name": "Sapo Cururu", "time": 60, "instances": 1, "location": "gef_fild01" },
+
+  { "name": "Mysteltainn", "time": 120, "instances": 1, "location": "gl_cas02" },
+  { "name": "Mysteltainn", "time": 30, "instances": 1, "location": "gl_knt02" },
+
+  { "name": "Tirfing", "time": 60, "instances": 1, "location": "c_tower4" },
+  { "name": "Tirfing", "time": 120, "instances": 1, "location": "gl_cas01" },
+  { "name": "Tirfing", "time": 120, "instances": 1, "location": "gl_cas02" },
+  { "name": "Tirfing", "time": 30, "instances": 1, "location": "gef_dun01" },
+
+  { "name": "Executioner", "time": 60, "instances": 1, "location": "c_tower4" },
+
+  { "name": "Lunático Natalino", "time": 120, "instances": 5, "location": "lutie" }
 ];
 
 // =======================
@@ -84,7 +119,16 @@ function getSprite(monsterName) {
     "Maya Macho": "MAYA_PUPLE.gif",
     "Gato de Nove Caudas": "CAT_O_NINE_TAIL.gif",
     "Lobo Errante": "VAGABOND_WOLF.gif",
-    "Donzela Verde": "Green_Maiden.gif"
+    "Donzela Verde": "Green_Maiden.gif",
+    "Rosa Selvagem": "WILD_ROSE.gif",
+    "Sussurro": "WHISPER.gif",
+    "Ungoliant": "UNGOLIANT.gif",
+    "Libélula": "DRAGON_FLY.gif",
+    "Sapo Cururu": "TOAD.gif",
+    "Mysteltainn": "MYSTELTAINN.gif",
+    "Tirfing": "TIRFING.gif",
+    "Executioner": "EXECUTIONER.gif",
+    "Lunático Natalino": "XMAS_LUNATIC.gif"
   };
   return `sprites/${mapping[monsterName] || "default.gif"}`;
 }
@@ -99,32 +143,32 @@ function getMapImage(location) {
 // =======================
 // Renderização do Bestiário (Slider via Swiper.js)
 // =======================
-function renderBestiary() {
+function renderBestiary(filteredData = monstersData) {
   const container = document.getElementById('bestiario-cards');
   container.innerHTML = '';
 
   // Agrupa os monstros por nome
   const grouped = {};
-  monstersData.forEach(monster => {
+  filteredData.forEach(monster => {
     if (!grouped[monster.name]) {
       grouped[monster.name] = [];
     }
     grouped[monster.name].push(monster);
   });
 
-  // Para cada monstro, cria um slide
+  // Cria os slides do Swiper apenas para os monstros filtrados
   Object.keys(grouped).forEach(name => {
     const monsters = grouped[name];
     const slide = document.createElement('div');
     slide.classList.add('swiper-slide');
+
     slide.innerHTML = `
       <div class="card">
-        <!-- A imagem do monstro é clicável -->
         <img src="${getSprite(name)}" alt="${name}" class="monster-sprite">
         <h3>${name}</h3>
       </div>
     `;
-    // Ao clicar na imagem do monstro:
+
     slide.querySelector('.monster-sprite').addEventListener('click', () => {
       if (monsters.length === 1) {
         iniciarTimer(monsters[0]);
@@ -132,25 +176,41 @@ function renderBestiary() {
         openModal(monsters);
       }
     });
+
     container.appendChild(slide);
   });
 
-  // Inicializa o Swiper
+  // Re-inicializa o Swiper com os novos slides
   new Swiper('.swiper-container', {
-    slidesPerView: 3,
-    spaceBetween: 15,
-    centeredSlides: true,
+    grid: { rows: 2, fill: "row" },
+    slidesPerView: 2,
+    spaceBetween: 8,
+    centeredSlides: false,
     navigation: {
       nextEl: '.swiper-button-next',
       prevEl: '.swiper-button-prev'
     },
     breakpoints: {
-      640: { slidesPerView: 1 },
-      768: { slidesPerView: 2 },
-      1024: { slidesPerView: 3 }
+      640: { slidesPerView: 1, grid: { rows: 1 } },
+      768: { slidesPerView: 2, grid: { rows: 2 } },
+      1024: { slidesPerView: 3, grid: { rows: 2 } }
     }
   });
 }
+
+
+document.getElementById('searchBar').addEventListener('input', function () {
+  let filter = this.value.toLowerCase();
+
+  // Filtra os monstros que contêm o texto digitado no nome
+  let filteredMonsters = monstersData.filter(monster => 
+    monster.name.toLowerCase().includes(filter)
+  );
+
+  // Renderiza o bestiário apenas com os monstros filtrados
+  renderBestiary(filteredMonsters);
+});
+
 
 // =======================
 // Modal para Seleção de Mapa

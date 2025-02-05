@@ -80,8 +80,8 @@ section h2 {
   transform: scale(1.1);
 }
 .card img.monster-sprite {
-  width: 200px;
-  height: 200px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
 }
 .card h3 {
@@ -153,8 +153,8 @@ section h2 {
   margin-bottom: 10px;
 }
 .active-timer img.monster-sprite {
-  width: 200px;
-  height: 200px;
+  width: 120px;
+  height: 120px;
   cursor: pointer;
 }
 .active-timer img.map-thumb {
@@ -198,8 +198,8 @@ section h2 {
   text-align: center;
 }
 .pending-timer img.monster-sprite {
-  width: 150px;
-  height: 150px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
   cursor: pointer;
 }
@@ -268,4 +268,41 @@ section h2 {
 .modal-map span {
   font-size: 1rem;
   color: #2c3e50;
+}
+.searchBar {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.search-container {
+  display: flex;
+  align-items: center;
+  background: #22222200; /* Cor de fundo do app */
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  max-width: 300px; /* Ajuste conforme necessário */
+  border: 1px solid #444; /* Borda sutil */
+}
+
+.search-container i {
+  color: #aaa; /* Cor do ícone */
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.search-container input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: white; /* Cor do texto */
+  font-size: 16px;
+}
+
+.search-container input::placeholder {
+  color: #1d1c1c9a; /* Cor do placeholder */
 }
