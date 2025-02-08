@@ -3,57 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Timer de Bosses</title>
+  <title>Ampulheta de Sarina</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Fonte Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <!-- Font Awesome (opcional, se precisar de ícones em outros contextos) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pVnYF3d3d/JzkQ8bVpZ7+Gx0VPR0U42wY9Zxy7zWDHUtlfx1EUb7YyW4d6CZYV8J3VOH7Zgq6e04b+vHUYy6BA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- Swiper CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
   <!-- Nosso CSS -->
   <link rel="stylesheet" href="styles.css">
+  
 </head>
 <body>
+<div class="background-image"></div>>
+  <div class="gradient"></div>
   <div class="container">
     <header>
-      <h1>Arkaik Timer</h1>
+      <h1>Ampulheta de Sarina</h1>
       <!-- O botão de mutar (se mantiver, pode ficar com o ícone ou texto) -->
       <button id="mute-btn"></button>
     </header>
     <main>
-      <!-- Seção Bestiário com Slider (Swiper) -->
-     
-      <section id="bestiario">
-        <h2>Bestiário</h2>
-        <div class="search-container">
-          <input type="text" id="searchBar" placeholder="Buscar monstro...">
-          <i class="fa-solid fa-search"></i>
-        </div>        
-        <div class="swiper-container">
-          <div class="swiper-wrapper" id="bestiario-cards">
-            <!-- Os slides serão gerados via JS -->
+       <!-- Seção Bestiário -->
+       <section id="bestiario">
+        <div class="section-header">
+          <h2>Bestiário</h2>
+          <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
+        </div>
+        <div class="section-content">
+          <div class="search-container">
+            <input type="text" id="searchBar" placeholder="Buscar monstro...">
+            <i class="fa-solid fa-search"></i>
           </div>
-          <!-- Botões de navegação do slider -->
-          <div class="swiper-button-prev"></div>
-          <div class="swiper-button-next"></div>
+          <div class="cards-container" id="bestiario-cards">
+            <!-- Os cards serão gerados via JS -->
+          </div>
         </div>
       </section>
 
-      <!-- Timers Ativos -->
+      <!-- Seção Timers Ativos (Nascendo) -->
       <section id="timers-ativos">
-        <h2>Nascendo</h2>
-        <div class="cards-container" id="active-timers-cards">
-          <!-- Cards dos timers ativos serão gerados via JS -->
+        <div class="section-header">
+          <h2>Surgindo</h2>
+          <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
+        </div>
+        <div class="section-content">
+          <div class="cards-container" id="active-timers-cards">
+            <!-- Cards dos timers ativos serão gerados via JS -->
+          </div>
         </div>
       </section>
-
-      <!-- Pendentes -->
+      <!-- Seção Timers Pendentes (Vivos) -->
       <section id="pendentes">
-        <h2>Vivos</h2>
-        <div class="cards-container" id="pending-timers-cards">
-          <!-- Cards dos timers pendentes serão gerados via JS -->
+        <div class="section-header">
+          <h2>Prontos para abate</h2>
+          <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
+        </div>
+        <div class="section-content">
+          <div class="cards-container" id="pending-timers-cards">
+            <!-- Cards dos timers pendentes serão gerados via JS -->
+          </div>
         </div>
       </section>
     </main>
@@ -64,14 +73,14 @@
     <div class="modal-content">
       <span class="close-btn" id="modal-close">&times;</span>
       <h3>Escolha o Mapa</h3>
-      <div id="modal-maps">
+      <div id="modal-maps" class="modal-map-grid">
         <!-- Opções de mapas serão geradas via JS -->
       </div>
     </div>
   </div>
+  <!-- Biblioteca SortableJS -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-  <!-- Swiper JS -->
-  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
   <!-- Nosso JavaScript -->
   <script src="script.js"></script>
 </body>
