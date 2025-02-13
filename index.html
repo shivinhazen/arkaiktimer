@@ -1,87 +1,141 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ampulheta de Sarina</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Fonte Roboto -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <!-- Font Awesome (opcional, se precisar de ícones em outros contextos) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pVnYF3d3d/JzkQ8bVpZ7+Gx0VPR0U42wY9Zxy7zWDHUtlfx1EUb7YyW4d6CZYV8J3VOH7Zgq6e04b+vHUYy6BA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- Nosso CSS -->
-  <link rel="stylesheet" href="styles.css">
-  
-</head>
-<body>
-<div class="background-image"></div>>
-  <div class="gradient"></div>
-  <div class="container">
-    <header>
-      <h1>Ampulheta de Sarina</h1>
-      <!-- O botão de mutar (se mantiver, pode ficar com o ícone ou texto) -->
-      <button id="mute-btn"></button>
-    </header>
-    <main>
-       <!-- Seção Bestiário -->
-       <section id="bestiario">
-        <div class="section-header">
-          <h2>Bestiário</h2>
-          <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
-        </div>
-        <div class="section-content">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ampulheta de Sarina</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <!-- Nosso CSS -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <!-- Dark mode fixo -->
+  <body class="dark-mode">
+    <div class="background-image"></div>
+    <div class="gradient"></div>
+    <div class="container">
+      <header class="header">
+        <h1 class="header__title">Ampulheta de Sarina</h1>
+      </header>
+      <main class="main">
+        <!-- Seção Bestiário -->
+        <section id="bestiary" class="section">
+          <div class="section__header">
+            <h2 class="section__title">Bestiário</h2>
+            <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
+          </div>
+          <!-- Caixa de busca abaixo do título -->
           <div class="search-container">
-            <input type="text" id="searchBar" placeholder="Buscar monstro...">
             <i class="fa-solid fa-search"></i>
+            <input type="text" id="searchBar" placeholder="Buscar monstro..." />
           </div>
-          <div class="cards-container" id="bestiario-cards">
-            <!-- Os cards serão gerados via JS -->
+          <div class="section__content" id="bestiary-cards">
+            <!-- Cards do bestiário gerados via JS -->
           </div>
-        </div>
-      </section>
+        </section>
+        <!-- Seção Timers Ativos (Surgindo) -->
+        <section id="active-timers" class="section">
+          <div class="section__header">
+            <h2 class="section__title">Surgindo</h2>
+            <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
+          </div>
+          <div class="section__content" id="active-timers-cards">
+            <!-- Timers ativos gerados via JS -->
+          </div>
+        </section>
+        <!-- Seção Timers Pendentes (Prontos para abate) -->
+        <section id="pending-timers" class="section">
+          <div class="section__header">
+            <h2 class="section__title">Prontos para abate</h2>
+            <div class="section__controls">
+              <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
+              <button id="clear-pending-btn" class="btn btn--icon" title="Limpar pendentes">
+                <i class="fa-solid fa-broom clear-pending-icon"></i>
+              </button>
+            </div>
+          </div>
+          <div class="section__content" id="pending-timers-cards">
+            <!-- Timers pendentes gerados via JS -->
+          </div>
+        </section>
+      </main>
+    </div>
 
-      <!-- Seção Timers Ativos (Nascendo) -->
-      <section id="timers-ativos">
-        <div class="section-header">
-          <h2>Surgindo</h2>
-          <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
+    <!-- Modal para Seleção de Mapa -->
+    <div id="modal" class="modal">
+      <div class="modal__content">
+        <button id="modal-close" class="modal__close" title="Fechar">&times;</button>
+        <h3 class="modal__title">Escolha o Mapa</h3>
+        <div id="modal-maps" class="modal__grid">
+          <!-- Opções de mapas geradas via JS -->
         </div>
-        <div class="section-content">
-          <div class="cards-container" id="active-timers-cards">
-            <!-- Cards dos timers ativos serão gerados via JS -->
-          </div>
-        </div>
-      </section>
-      <!-- Seção Timers Pendentes (Vivos) -->
-      <section id="pendentes">
-        <div class="section-header">
-          <h2>Prontos para abate</h2>
-          <i class="toggle-icon fa-solid fa-eye" title="Minimizar/Expandir"></i>
-        </div>
-        <div class="section-content">
-          <div class="cards-container" id="pending-timers-cards">
-            <!-- Cards dos timers pendentes serão gerados via JS -->
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- Modal para Seleção de Mapa -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="modal-close">&times;</span>
-      <h3>Escolha o Mapa</h3>
-      <div id="modal-maps" class="modal-map-grid">
-        <!-- Opções de mapas serão geradas via JS -->
       </div>
     </div>
-  </div>
-  <!-- Biblioteca SortableJS -->
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-  <!-- Nosso JavaScript -->
-  <script src="script.js"></script>
-</body>
+    <!-- Modal de Reset -->
+    <div id="reset-modal" class="modal">
+      <div class="modal__content">
+        <button id="reset-modal-close" class="modal__close" title="Fechar">&times;</button>
+        <h3 class="modal__title">Resetar Configurações</h3>
+        <p>Tem certeza de que deseja resetar as configurações?</p>
+        <div class="modal__actions">
+          <button id="confirm-reset" class="btn">Sim, resetar</button>
+          <button id="cancel-reset" class="btn">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Configurações de Visibilidade -->
+    <div id="visibility-modal" class="modal">
+      <div class="modal__content">
+        <button id="visibility-modal-close" class="modal__close" title="Fechar">&times;</button>
+        <h3 class="modal__title">Configurações de Visibilidade</h3>
+        <form id="visibility-form">
+          <label>
+            <input type="checkbox" id="visibility-bestiary" checked />
+            Mostrar Bestiário
+          </label>
+          <label>
+            <input type="checkbox" id="visibility-active" checked />
+            Mostrar Surgindo
+          </label>
+          <label>
+            <input type="checkbox" id="visibility-pending" checked />
+            Mostrar Prontos para abate
+          </label>
+          <div class="modal__actions">
+            <button type="submit" class="btn">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Novo Menu de Configurações: Apenas Volume (dark mode fixo) -->
+    <div id="settings-container" class="settings-container">
+      <button id="volume-btn" class="settings-icon" title="Volume">
+        <i class="fa-solid fa-volume-up"></i>
+        <div class="volume-slider-container">
+          <input type="range" id="volume-slider" min="0" max="100" value="50" />
+        </div>
+      </button>
+    </div>
+
+    <!-- Ícone de Reset (lixeira) separado, posicionado no canto inferior direito -->
+    <div id="reset-icon-container" class="reset-icon-container">
+      <button id="reset-btn" class="reset-btn" title="Resetar Configurações">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+
+    <!-- Biblioteca SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- Nosso JavaScript -->
+    <script src="script.js"></script>
+  </body>
 </html>

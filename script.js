@@ -1,9 +1,11 @@
-/* =======================
-   Dados do Bestiário
-   ======================= */
-   const monstersData = [
+(() => {
+  "use strict";
+
+  /****************************
+   * Dados e Estado do App
+   ****************************/
+  const monstersData = [
     { "name": "Dragão Mutante", "time": 20, "instances": 3, "location": "cmd_fild03" },
-    { "name": "Dragão Mutante", "time": 1, "instances": 3, "location": "cmd_fild05" },
     { "name": "Dragão Mutante", "time": 400, "instances": 3, "location": "hu_fild05" },
     { "name": "Eclipse", "time": 30, "instances": 1, "location": "prt_fild02" },
     { "name": "Eclipse", "time": 32, "instances": 1, "location": "prt_maze03" },
@@ -81,48 +83,54 @@
     { "name": "General Tartaruga", "time": 120, "instances": 5, "location": "lutie" },
     { "name": "Vesper", "time": 120, "instances": 5, "location": "lutie" }
   ];
-  
-  /* =======================
-     Variáveis Globais e Storage
-     ======================= */
-  let activeTimers = [];   // Cada timer ativo: { id, name, location, duration, endTime }
-  let pendingTimers = [];  // Cada timer pendente: { id, name, location, expiredAt }
-  let isMuted = JSON.parse(localStorage.getItem('isMuted')) || false;
-  
-  /* Atualiza o botão de mutar */
-  function updateMuteButton() {
-    const muteBtn = document.getElementById('mute-btn');
-    if (isMuted) {
-      muteBtn.innerHTML = '<i class="fa-solid fa-volume-mute"></i>';
-    } else {
-      muteBtn.innerHTML = '<i class="fa-solid fa-volume-up"></i>';
+
+  const AppState = {
+    activeTimers: [],
+    pendingTimers: [],
+    isMuted: false,
+    isDarkMode: true,
+  };
+
+  // Inicializa o volume padrão (beepVolume varia de 0 até 0.4)
+  let beepVolume = 0.2;
+
+  try {
+    AppState.isMuted = JSON.parse(localStorage.getItem("isMuted")) || false;
+    const savedActive = localStorage.getItem("activeTimers");
+    const savedPending = localStorage.getItem("pendingTimers");
+    if (savedActive) AppState.activeTimers = JSON.parse(savedActive);
+    if (savedPending) AppState.pendingTimers = JSON.parse(savedPending);
+  } catch (e) {
+    console.error("Erro ao carregar dados do localStorage:", e);
+  }
+
+  /****************************
+   * Funções Utilitárias
+   ****************************/
+  const saveData = () => {
+    try {
+      localStorage.setItem("activeTimers", JSON.stringify(AppState.activeTimers));
+      localStorage.setItem("pendingTimers", JSON.stringify(AppState.pendingTimers));
+    } catch (e) {
+      console.error("Erro ao salvar dados no localStorage:", e);
     }
-  }
-  updateMuteButton();
-  document.getElementById('mute-btn').addEventListener('click', () => {
-    isMuted = !isMuted;
-    localStorage.setItem('isMuted', JSON.stringify(isMuted));
-    updateMuteButton();
-  });
-  
-  /* Recupera dados salvos, se houver */
-  if (localStorage.getItem('activeTimers')) {
-    activeTimers = JSON.parse(localStorage.getItem('activeTimers'));
-  }
-  if (localStorage.getItem('pendingTimers')) {
-    pendingTimers = JSON.parse(localStorage.getItem('pendingTimers'));
-  }
-  
-  /* Função de Salvamento dos timers */
-  function saveData() {
-    localStorage.setItem('activeTimers', JSON.stringify(activeTimers));
-    localStorage.setItem('pendingTimers', JSON.stringify(pendingTimers));
-  }
-  
-  /* =======================
-     Função para Obter o Sprite do Monstro
-     ======================= */
-  function getSprite(monsterName) {
+  };
+
+  // playBeep usa GainNode com valor máximo de 0.4
+  const playBeep = () => {
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = context.createOscillator();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(440, context.currentTime);
+    const gainNode = context.createGain();
+    gainNode.gain.value = beepVolume;
+    oscillator.connect(gainNode);
+    gainNode.connect(context.destination);
+    oscillator.start();
+    setTimeout(() => oscillator.stop(), 300);
+  };
+
+  const getSprite = (monsterName) => {
     const mapping = {
       "Dragão Mutante": "MUTANT_DRAGON.gif",
       "Eclipse": "ECLIPSE.gif",
@@ -174,172 +182,103 @@
       "Vesper": "VESPER.gif",
     };
     return `sprites/${mapping[monsterName] || "default.gif"}`;
-  }
-  
-  /* Atualiza o gradiente conforme o mouse se move */
-  document.addEventListener("DOMContentLoaded", function() {
-    const gradient = document.querySelector(".gradient");
-    function onMouseMove(event) {
-      gradient.style.backgroundImage =
-        'radial-gradient(at ' +
-        event.clientX +
-        'px ' +
-        event.clientY +
-        'px, rgba(174, 213, 174, 0.95) 0, rgb(254, 201, 154) 70%)';
-    }
-    document.addEventListener("mousemove", onMouseMove);
-  });
-  
-  /* =======================
-     Função para formatar o tempo relativo
-     ======================= */
-  function formatRelativeTime(timestamp) {
+  };
+
+  const getMapImage = (location) => `maps/${location}.webp`;
+
+  const formatTime = (totalSeconds) => {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return `${h > 0 ? String(h).padStart(2, "0") + ":" : ""}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const formatRelativeTime = (timestamp) => {
     const diffInSeconds = Math.floor((Date.now() - timestamp) / 1000);
-    if (diffInSeconds < 60) {
-      return `${diffInSeconds} segundo${diffInSeconds !== 1 ? 's' : ''}`;
-    } else if (diffInSeconds < 3600) {
+    if (diffInSeconds < 60)
+      return `${diffInSeconds} segundo${diffInSeconds !== 1 ? "s" : ""}`;
+    else if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} minuto${minutes !== 1 ? 's' : ''}`;
+      return `${minutes} minuto${minutes !== 1 ? "s" : ""}`;
     } else {
       const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} hora${hours !== 1 ? 's' : ''}`;
+      return `${hours} hora${hours !== 1 ? "s" : ""}`;
     }
-  }
-  
-  /* =======================
-     Função para aplicar o efeito 3D (com efeito aumentado)
-     ======================= */
-  function attach3DEffect(card) {
-    card.style.transformStyle = 'preserve-3d';
-    card.style.clipPath = 'none'; // Garante formato retangular
-  
-    // Adiciona o elemento "glow" se não existir
-    if (!card.querySelector('.glow')) {
-      const glow = document.createElement('div');
-      glow.classList.add('glow');
+  };
+
+  const attach3DEffect = (card) => {
+    card.style.transformStyle = "preserve-3d";
+    card.style.clipPath = "none";
+    if (!card.querySelector(".card__glow")) {
+      const glow = document.createElement("div");
+      glow.classList.add("card__glow");
       card.appendChild(glow);
     }
-  
-    let bounds;
-  
-    function onMouseMove(e) {
+    card.addEventListener("mousemove", (e) => {
+      const bounds = card.getBoundingClientRect();
       const mouseX = e.clientX;
       const mouseY = e.clientY;
       const leftX = mouseX - bounds.x;
       const topY = mouseY - bounds.y;
       const center = {
         x: leftX - bounds.width / 2,
-        y: topY - bounds.height / 2
+        y: topY - bounds.height / 2,
       };
       const distance = Math.sqrt(center.x ** 2 + center.y ** 2);
-      // Multiplicador de ângulo aumentado para efeito mais dramático
       const angle = Math.log(distance + 1) * 3;
-  
-      // Aplica transformação 3D com perspective menor e escala maior
-      card.style.transform = `
-        perspective(1200px)
-        scale3d(1.1, 1.1, 1.1)
-        rotate3d(${center.y / 50}, ${-center.x / 50}, 0, ${angle}deg)
-      `;
-  
-      // Transformação para o sprite (GIF) interno
-      const gif = card.querySelector('.monster-sprite');
-      if (gif) {
-        gif.style.transformStyle = 'preserve-3d';
-        gif.style.transform = `
-          perspective(1200px)
-          translateZ(40px)
-          rotate3d(${center.y / 75}, ${-center.x / 75}, 0, ${angle / 1.2}deg)
-        `;
+      card.style.transform = `perspective(1200px) scale3d(1.1, 1.1, 1.1) rotate3d(${center.y / 50}, ${-center.x / 50}, 0, ${angle}deg)`;
+      const img = card.querySelector(".card__img");
+      if (img) {
+        img.style.transform = `perspective(1200px) translateZ(40px) rotate3d(${center.y / 75}, ${-center.x / 75}, 0, ${angle / 1.2}deg)`;
       }
-  
-      // Atualiza o glow
-      const glow = card.querySelector('.glow');
+      const glow = card.querySelector(".card__glow");
       if (glow) {
-        glow.style.backgroundImage = `
-          radial-gradient(
-            circle at ${center.x * 2 + bounds.width / 2}px ${center.y * 2 + bounds.height / 2}px,
-            #ffffff55,
-            #0000000f
-          )
-        `;
-      }
-    }
-  
-    card.addEventListener('mouseenter', () => {
-      bounds = card.getBoundingClientRect();
-      document.addEventListener('mousemove', onMouseMove);
-    });
-  
-    card.addEventListener('mouseleave', () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      card.style.transform = '';
-      const gif = card.querySelector('.monster-sprite');
-      if (gif) {
-        gif.style.transform = '';
+        glow.style.backgroundImage = `radial-gradient(circle at ${center.x * 2 + bounds.width / 2}px ${center.y * 2 + bounds.height / 2}px, transparent, rgba(0,0,0,0.9))`;
       }
     });
-  }
-  
-  /* =======================
-     Função para Obter a Imagem do Mapa
-     ======================= */
-  function getMapImage(location) {
-    return `maps/${location}.webp`;
-  }
-  
-  /* =======================
-     Função para salvar a ordem do Bestiário
-     ======================= */
-  function saveBestiaryOrder() {
-    const container = document.getElementById('bestiario-cards');
-    const order = [];
-    container.querySelectorAll('.card').forEach(card => {
-      const name = card.querySelector('h3').textContent;
-      order.push(name);
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "";
+      const img = card.querySelector(".card__img");
+      if (img) {
+        img.style.transform = "";
+      }
     });
-    localStorage.setItem('bestiaryOrder', JSON.stringify(order));
-  }
-  
-  /* =======================
-     Renderização do Bestiário (com reordenação, botões e teclado)
-     ======================= */
-  function renderBestiary(filteredData = monstersData) {
-    const container = document.getElementById('bestiario-cards');
-    container.innerHTML = '';
-  
-    // Agrupa os monstros por nome
+  };
+
+  /****************************
+   * Renderização
+   ****************************/
+  const renderBestiary = (filteredData = monstersData) => {
+    const container = document.getElementById("bestiary-cards");
+    if (!container) return;
+    container.innerHTML = "";
     const grouped = {};
-    filteredData.forEach(monster => {
-      if (!grouped[monster.name]) {
-        grouped[monster.name] = [];
-      }
+    filteredData.forEach((monster) => {
+      if (!grouped[monster.name]) grouped[monster.name] = [];
       grouped[monster.name].push(monster);
     });
-  
-    // Cria um array com os nomes (chaves) dos grupos
     let order = Object.keys(grouped);
-  
-    // Se existir uma ordem salva, usamos ela para ordenar
-    const savedOrder = JSON.parse(localStorage.getItem('bestiaryOrder'));
-    if (savedOrder && Array.isArray(savedOrder)) {
-      order.sort((a, b) => {
-        const indexA = savedOrder.indexOf(a);
-        const indexB = savedOrder.indexOf(b);
-        return (indexA === -1 ? savedOrder.length : indexA) - (indexB === -1 ? savedOrder.length : indexB);
-      });
+    try {
+      const savedOrder = JSON.parse(localStorage.getItem("bestiaryOrder"));
+      if (savedOrder && Array.isArray(savedOrder)) {
+        order.sort((a, b) => {
+          const indexA = savedOrder.indexOf(a);
+          const indexB = savedOrder.indexOf(b);
+          return (indexA === -1 ? savedOrder.length : indexA) - (indexB === -1 ? savedOrder.length : indexB);
+        });
+      }
+    } catch (e) {
+      console.error(e);
     }
-  
-    // Cria os cards seguindo a ordem definida
-    order.forEach(name => {
+    order.forEach((name) => {
       const monsters = grouped[name];
-      const card = document.createElement('div');
-      card.classList.add('card');
-      card.setAttribute('tabindex', '0'); // Para navegação via teclado
+      const card = document.createElement("div");
+      card.classList.add("card");
+      card.setAttribute("tabindex", "0");
       card.innerHTML = `
-        <div class="card-content">
-          <img src="${getSprite(name)}" alt="${name}" class="monster-sprite">
-          <h3>${name}</h3>
+        <div class="card__content">
+          <img src="${getSprite(name)}" alt="${name}" class="card__img">
+          <h3 class="card__title">${name}</h3>
         </div>
         <div class="reorder-buttons">
           <button class="move-first" title="Mover para o início">
@@ -350,234 +289,137 @@
           </button>
         </div>
       `;
-  
       attach3DEffect(card);
-  
-      // Evento de clique no sprite
-      card.querySelector('.monster-sprite').addEventListener('click', () => {
-        if (monsters.length === 1) {
-          iniciarTimer(monsters[0]);
-        } else {
-          openModal(monsters);
+      // Toda a área do card (exceto as setas de reordenação) agora abre o modal ou inicia o timer
+      card.addEventListener("click", (e) => {
+        if (!e.target.closest(".reorder-buttons")) {
+          if (monsters.length === 1) {
+            iniciarTimer(monsters[0]);
+          } else {
+            openModal(monsters);
+          }
         }
       });
-  
-      // Botões de reordenação rápida
-      const moveFirstBtn = card.querySelector('.move-first');
-      const moveLastBtn = card.querySelector('.move-last');
-  
-      moveFirstBtn.addEventListener('click', (e) => {
+      card.querySelector(".move-first").addEventListener("click", (e) => {
         e.stopPropagation();
         container.prepend(card);
         saveBestiaryOrder();
       });
-  
-      moveLastBtn.addEventListener('click', (e) => {
+      card.querySelector(".move-last").addEventListener("click", (e) => {
         e.stopPropagation();
         container.appendChild(card);
         saveBestiaryOrder();
       });
-  
-      // Suporte à navegação via teclado para reordenação
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') {
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
           const prev = card.previousElementSibling;
           if (prev) {
             container.insertBefore(card, prev);
             saveBestiaryOrder();
           }
-        } else if (e.key === 'ArrowRight') {
+        } else if (e.key === "ArrowRight") {
           const next = card.nextElementSibling;
           if (next) {
             container.insertBefore(next, card);
             saveBestiaryOrder();
           }
-        } else if (e.key === 'Home') {
+        } else if (e.key === "Home") {
           container.prepend(card);
           saveBestiaryOrder();
-        } else if (e.key === 'End') {
+        } else if (e.key === "End") {
           container.appendChild(card);
           saveBestiaryOrder();
         }
       });
-  
       container.appendChild(card);
     });
-  }
-  
-  /* Evento para busca no Bestiário */
-  document.getElementById('searchBar').addEventListener('input', function () {
-    const filter = this.value.toLowerCase();
-    const filteredMonsters = monstersData.filter(monster =>
-      monster.name.toLowerCase().includes(filter)
-    );
-    renderBestiary(filteredMonsters);
-  });
-  
-  /* Inicializa o Sortable para a grid do Bestiário com auto-scroll */
-  document.addEventListener('DOMContentLoaded', function() {
-    const bestiaryContainer = document.getElementById('bestiario-cards');
-    Sortable.create(bestiaryContainer, {
-      animation: 150,
-      ghostClass: 'sortable-ghost',
-      scroll: true,
-      scrollSensitivity: 50,
-      scrollSpeed: 15,
-      bubbleScroll: true,
-      onEnd: function(evt) {
-        saveBestiaryOrder();  // Salva a ordem após o drag and drop
-      }
-    });
-  });
-  
-  /* =======================
-     Modal para Seleção de Mapa
-     ======================= */
-  const modal = document.getElementById('modal');
-  const modalMaps = document.getElementById('modal-maps');
-  const modalClose = document.getElementById('modal-close');
-  
-  function openModal(monsters) {
-    modalMaps.innerHTML = '';
-    monsters.forEach(monster => {
-      const div = document.createElement('div');
-      div.classList.add('modal-map');
-      div.innerHTML = `
-        <img src="${getMapImage(monster.location)}" alt="${monster.location}">
-        <p class="map-name">${monster.location}</p>
-        <p class="map-time"><i class="fa-solid fa-clock"></i> ${monster.time} min</p>
-      `;
-      div.addEventListener('click', () => {
-        iniciarTimer(monster);
-        closeModal();
-      });
-      modalMaps.appendChild(div);
-    });
-    modal.style.display = 'block';
-  }
-  
-  function closeModal() {
-    modal.style.display = 'none';
-  }
-  
-  modalClose.addEventListener('click', closeModal);
-  window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-  
-  /* =======================
-     Inicia um Timer
-     ======================= */
-  function iniciarTimer(monster) {
-    const id = Date.now();
-    const duration = monster.time * 60; // duração em segundos
-    const endTime = Date.now() + duration * 1000;
-    activeTimers.push({
-      id,
-      name: monster.name,
-      location: monster.location,
-      duration,
-      endTime
-    });
-    // Remove o timer pendente, se existir
-    pendingTimers = pendingTimers.filter(p => !(p.name === monster.name && p.location === monster.location));
-    saveData();
-    renderActiveTimers();
-    renderPendingTimers();
-  }
-  
-  /* =======================
-     Renderização dos Timers Ativos
-     ======================= */
-  function renderActiveTimers() {
-    const container = document.getElementById('active-timers-cards');
-    container.innerHTML = '';
-  
-    // Ordena os timers pelo tempo restante
-    activeTimers.sort((a, b) => (a.endTime - Date.now()) - (b.endTime - Date.now()));
-  
-    activeTimers.forEach(timer => {
-      const card = document.createElement('div');
-      card.classList.add('card', 'active-timer');
+  };
+
+  const renderActiveTimers = () => {
+    const container = document.getElementById("active-timers-cards");
+    container.innerHTML = "";
+    AppState.activeTimers.sort((a, b) => (a.endTime - Date.now()) - (b.endTime - Date.now()));
+    AppState.activeTimers.forEach((timer) => {
       const timeRemaining = Math.max(0, Math.floor((timer.endTime - Date.now()) / 1000));
+      const card = document.createElement("div");
+      card.classList.add("card", "active-timer");
       card.innerHTML = `
         <button class="btn-remove">×</button>
         <div class="card-header">
-          <img src="${getSprite(timer.name)}" alt="${timer.name}" class="monster-sprite">
+          <img src="${getSprite(timer.name)}" alt="${timer.name}" class="card__img">
           <img src="${getMapImage(timer.location)}" alt="${timer.location}" class="map-thumb">
         </div>
         <div class="monster-info">
-          <h3>${timer.name}</h3>
+          <h3 class="card__title">${timer.name}</h3>
         </div>
         <div class="time-remaining">${formatTime(timeRemaining)}</div>
         <div class="progress-container">
           <div class="progress-fill" style="width: ${((timeRemaining / timer.duration) * 100).toFixed(0)}%;"></div>
         </div>
       `;
-  
       attach3DEffect(card);
-  
-      card.querySelector('.btn-remove').addEventListener('click', () => {
-        activeTimers = activeTimers.filter(t => t.id !== timer.id);
+      card.querySelector(".btn-remove").addEventListener("click", () => {
+        AppState.activeTimers = AppState.activeTimers.filter((t) => t.id !== timer.id);
         saveData();
         renderActiveTimers();
       });
       container.appendChild(card);
     });
-  }
-  
-  /* =======================
-     Renderização dos Timers Pendentes
-     ======================= */
-  function renderPendingTimers() {
-    const container = document.getElementById('pending-timers-cards');
-    container.innerHTML = '';
-  
-    pendingTimers.forEach(pend => {
-      const card = document.createElement('div');
-      card.classList.add('card', 'pending-timer');
+  };
+
+  const renderPendingTimers = () => {
+    const container = document.getElementById("pending-timers-cards");
+    container.innerHTML = "";
+    AppState.pendingTimers.forEach((pend) => {
+      const card = document.createElement("div");
+      card.classList.add("card", "pending-timer");
       card.innerHTML = `
-        <img src="${getSprite(pend.name)}" alt="${pend.name}" class="monster-sprite">
-        <h3>${pend.name}</h3>
+        <button class="btn-remove">×</button>
+        <img src="${getSprite(pend.name)}" alt="${pend.name}" class="card__img">
+        <h3 class="card__title">${pend.name}</h3>
         <p>${pend.location}</p>
         <span class="expired-time">Nasceu há ${formatRelativeTime(pend.expiredAt)}</span>
       `;
-  
       attach3DEffect(card);
-  
-      card.querySelector('.monster-sprite').addEventListener('click', () => {
-        const monster = monstersData.find(m => m.name === pend.name && m.location === pend.location);
-        if (monster) {
-          iniciarTimer(monster);
-        }
+      card.querySelector(".card__img").addEventListener("click", () => {
+        iniciarTimer({ name: pend.name, location: pend.location, time: pend.time }, pend.id);
+        saveData();
+        renderPendingTimers();
+      });
+      card.querySelector(".btn-remove").addEventListener("click", () => {
+        AppState.pendingTimers = AppState.pendingTimers.filter((p) => p.id !== pend.id);
         saveData();
         renderPendingTimers();
       });
       container.appendChild(card);
     });
-  }
-  
-  /* =======================
-     Atualização dos Timers (a cada segundo)
-     ======================= */
-  function updateTimers() {
+  };
+
+  // Atualiza o texto "Nasceu há X segundos" dos timers pendentes
+  const updatePendingRelativeTimes = () => {
+    const pendingCards = document.querySelectorAll("#pending-timers-cards .pending-timer");
+    pendingCards.forEach((card, index) => {
+      const pend = AppState.pendingTimers[index];
+      if (pend) {
+        card.querySelector(".expired-time").textContent = "Nasceu há " + formatRelativeTime(pend.expiredAt);
+      }
+    });
+  };
+
+  const updateTimers = () => {
     const now = Date.now();
     let changed = false;
-    // Atualiza os timers ativos e move os expirados para os pendentes
-    activeTimers = activeTimers.filter(timer => {
+    AppState.activeTimers = AppState.activeTimers.filter((timer) => {
       const timeRemaining = (timer.endTime - now) / 1000;
-      if (timeRemaining < 1) {  // se o tempo restante for menor que 1 segundo
-        pendingTimers.push({
+      if (timeRemaining < 1) {
+        AppState.pendingTimers.push({
           id: timer.id,
           name: timer.name,
           location: timer.location,
-          expiredAt: now
+          time: timer.duration / 60,
+          expiredAt: now,
         });
-        if (!isMuted) {
-          playBeep();
-        }
+        if (!AppState.isMuted) playBeep();
         changed = true;
         return false;
       }
@@ -588,66 +430,275 @@
       renderActiveTimers();
       renderPendingTimers();
     } else {
-      document.querySelectorAll('#active-timers-cards .active-timer').forEach((card, index) => {
-        const timer = activeTimers[index];
+      document.querySelectorAll("#active-timers-cards .active-timer").forEach((card, index) => {
+        const timer = AppState.activeTimers[index];
         if (timer) {
           const timeRemaining = Math.max(0, Math.floor((timer.endTime - Date.now()) / 1000));
-          card.querySelector('.time-remaining').textContent = formatTime(timeRemaining);
+          card.querySelector(".time-remaining").textContent = formatTime(timeRemaining);
           const fillPercent = ((timeRemaining / timer.duration) * 100).toFixed(0);
-          card.querySelector('.progress-fill').style.width = `${fillPercent}%`;
+          card.querySelector(".progress-fill").style.width = `${fillPercent}%`;
         }
       });
     }
-  }
+    // Atualiza os textos dos timers pendentes
+    updatePendingRelativeTimes();
+  };
+
   setInterval(updateTimers, 1000);
-  
-  /* =======================
-     Função para Formatar o Tempo (hh:mm:ss)
-     ======================= */
-  function formatTime(totalSeconds) {
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    return `${h > 0 ? h.toString().padStart(2, '0') + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  }
-  
-  /* =======================
-     Função de Notificação Sonora
-     ======================= */
-  function playBeep() {
-    const context = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = context.createOscillator();
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, context.currentTime);
-    oscillator.connect(context.destination);
-    oscillator.start();
-    setTimeout(() => {
-      oscillator.stop();
-    }, 300);
-  }
-  
-  /* =======================
-     Inicializações
-     ======================= */
-  renderBestiary();
-  renderActiveTimers();
-  renderPendingTimers();
-  
-  /* =======================
-     Toggle das Seções (Minimizar/Expandir)
-     ======================= */
-  document.querySelectorAll('.toggle-icon').forEach(icon => {
-    icon.addEventListener('click', function() {
-      const sectionContent = this.closest('section').querySelector('.section-content');
-      if (sectionContent.style.display === 'none') {
-        sectionContent.style.display = '';
-        this.classList.remove('fa-eye-slash');
-        this.classList.add('fa-eye');
+
+  /****************************
+   * Modal - Seleção de Mapa
+   ****************************/
+  const modal = document.getElementById("modal");
+  const modalMaps = document.getElementById("modal-maps");
+  const modalClose = document.getElementById("modal-close");
+
+  const openModal = (monsters) => {
+    modalMaps.innerHTML = "";
+    monsters.forEach((monster) => {
+      const div = document.createElement("div");
+      div.classList.add("modal__map");
+      div.innerHTML = `
+        <img src="${getMapImage(monster.location)}" alt="${monster.location}">
+        <p class="map-name">${monster.location}</p>
+        <p class="map-time"><i class="fa-solid fa-clock"></i> ${monster.time} min</p>
+      `;
+      div.addEventListener("click", () => {
+        iniciarTimer(monster);
+        closeModal();
+      });
+      modalMaps.appendChild(div);
+    });
+    modal.style.display = "block";
+  };
+
+  const closeModal = () => {
+    modal.style.display = "none";
+  };
+
+  modalClose.addEventListener("click", closeModal);
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  /****************************
+   * Modal - Reset Defaults
+   ****************************/
+  const resetModal = document.getElementById("reset-modal");
+  const resetModalClose = document.getElementById("reset-modal-close");
+  const confirmReset = document.getElementById("confirm-reset");
+  const cancelReset = document.getElementById("cancel-reset");
+
+  const openResetModal = () => {
+    resetModal.style.display = "block";
+  };
+
+  const closeResetModal = () => {
+    resetModal.style.display = "none";
+  };
+
+  document.getElementById("reset-btn").addEventListener("click", openResetModal);
+  resetModalClose.addEventListener("click", closeResetModal);
+  cancelReset.addEventListener("click", closeResetModal);
+  confirmReset.addEventListener("click", () => {
+    if (confirm("Deseja realmente resetar as configurações?")) {
+      localStorage.clear();
+      location.reload();
+    }
+  });
+
+  /****************************
+   * Modal - Configurações de Visibilidade
+   ****************************/
+  const visibilityModal = document.getElementById("visibility-modal");
+  const visibilityModalClose = document.getElementById("visibility-modal-close");
+  const visibilityForm = document.getElementById("visibility-form");
+
+  const openVisibilityModal = () => {
+    visibilityModal.style.display = "block";
+  };
+
+  const closeVisibilityModal = () => {
+    visibilityModal.style.display = "none";
+  };
+
+  document.getElementById("open-visibility-modal")?.addEventListener("click", openVisibilityModal);
+  visibilityModalClose.addEventListener("click", closeVisibilityModal);
+
+  visibilityForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const bestiaryVisible = document.getElementById("visibility-bestiary").checked;
+    const activeVisible = document.getElementById("visibility-active").checked;
+    const pendingVisible = document.getElementById("visibility-pending").checked;
+    document.getElementById("bestiary").style.display = bestiaryVisible ? "" : "none";
+    document.getElementById("active-timers").style.display = activeVisible ? "" : "none";
+    document.getElementById("pending-timers").style.display = pendingVisible ? "" : "none";
+    closeVisibilityModal();
+  });
+
+  /****************************
+   * Timer
+   ****************************/
+  const iniciarTimer = (monster, pendingId = null) => {
+    const id = Date.now();
+    const duration = monster.time * 60;
+    const endTime = Date.now() + duration * 1000;
+    AppState.activeTimers.push({
+      id,
+      name: monster.name,
+      location: monster.location,
+      duration,
+      endTime,
+    });
+    if (pendingId) {
+      AppState.pendingTimers = AppState.pendingTimers.filter((p) => p.id !== pendingId);
+    }
+    saveData();
+    renderActiveTimers();
+    renderPendingTimers();
+  };
+
+  const saveBestiaryOrder = () => {
+    const container = document.getElementById("bestiary-cards");
+    const order = [];
+    container.querySelectorAll(".card").forEach((card) => {
+      const name = card.querySelector(".card__title").textContent;
+      order.push(name);
+    });
+    try {
+      localStorage.setItem("bestiaryOrder", JSON.stringify(order));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  /****************************
+   * Outras Funcionalidades
+   ****************************/
+  document.querySelectorAll(".toggle-icon").forEach((icon) => {
+    icon.addEventListener("click", function () {
+      const sectionContent = this.closest(".section").querySelector(".section__content");
+      if (sectionContent.style.display === "none") {
+        sectionContent.style.display = "";
+        this.classList.remove("fa-eye-slash");
+        this.classList.add("fa-eye");
       } else {
-        sectionContent.style.display = 'none';
-        this.classList.remove('fa-eye');
-        this.classList.add('fa-eye-slash');
+        sectionContent.style.display = "none";
+        this.classList.remove("fa-eye");
+        this.classList.add("fa-eye-slash");
       }
     });
   });
-  
+
+  document.getElementById("clear-pending-btn").addEventListener("click", () => {
+    AppState.pendingTimers = [];
+    saveData();
+    renderPendingTimers();
+  });
+
+  document.getElementById("clear-timers")?.addEventListener("click", () => {
+    AppState.activeTimers = [];
+    AppState.pendingTimers = [];
+    saveData();
+    renderActiveTimers();
+    renderPendingTimers();
+  });
+
+  const throttle = (func, limit) => {
+    let inThrottle;
+    return function () {
+      const args = arguments;
+      const context = this;
+      if (!inThrottle) {
+        func.apply(context, args);
+        inThrottle = true;
+        setTimeout(() => (inThrottle = false), limit);
+      }
+    };
+  };
+
+  const gradient = document.querySelector(".gradient");
+  // Efeito do mouse: radial transparente que revela a imagem de fundo
+  const updateGradient = (event) => {
+    gradient.style.backgroundImage = `radial-gradient(circle at ${event.clientX}px ${event.clientY}px, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 50px, rgba(0,0,0,0.6) 100px, rgba(0,0,0,0.8) 150px)`;
+  };
+
+  document.addEventListener("mousemove", throttle(updateGradient, 50));
+
+  // Inicializa Sortable.js para o Bestiário
+  const initSortable = () => {
+    const bestiaryContainer = document.getElementById("bestiary-cards");
+    if (bestiaryContainer) {
+      Sortable.create(bestiaryContainer, {
+        animation: 150,
+        ghostClass: "sortable-ghost",
+        scroll: true,
+        scrollSensitivity: 50,
+        scrollSpeed: 15,
+        bubbleScroll: true,
+        onEnd: () => {
+          saveBestiaryOrder();
+        },
+      });
+    }
+  };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initSortable);
+  } else {
+    initSortable();
+  }
+
+  const searchBar = document.getElementById("searchBar");
+  if (searchBar) {
+    searchBar.addEventListener("input", function () {
+      const filter = this.value.toLowerCase();
+      const filteredMonsters = monstersData.filter((monster) =>
+        monster.name.toLowerCase().includes(filter)
+      );
+      renderBestiary(filteredMonsters);
+    });
+  }
+
+  // --- Controle do Volume e Mute com Slider ao lado ---
+  const volumeBtn = document.getElementById("volume-btn");
+  const volumeSliderContainer = document.querySelector(".volume-slider-container");
+  let volumeHideTimeout;
+  const volumeSlider = document.getElementById("volume-slider");
+  if (volumeSlider) {
+    volumeSlider.addEventListener("input", (e) => {
+      beepVolume = (e.target.value / 100) * 0.4;
+      console.log("Volume ajustado para:", beepVolume);
+    });
+  }
+  const updateVolumeIcon = () => {
+    const icon = volumeBtn.querySelector("i");
+    if (AppState.isMuted) {
+      icon.className = "fa-solid fa-volume-mute";
+    } else {
+      icon.className = "fa-solid fa-volume-up";
+    }
+  };
+  volumeBtn.addEventListener("click", () => {
+    AppState.isMuted = !AppState.isMuted;
+    localStorage.setItem("isMuted", JSON.stringify(AppState.isMuted));
+    updateVolumeIcon();
+    // Exibe o slider (ao lado do ícone) com efeito de entrada
+    volumeSliderContainer.classList.add("visible");
+    if (volumeHideTimeout) clearTimeout(volumeHideTimeout);
+    volumeHideTimeout = setTimeout(() => {
+      volumeSliderContainer.classList.remove("visible");
+    }, 5000);
+  });
+  volumeSliderContainer.addEventListener("mouseenter", () => {
+    if (volumeHideTimeout) clearTimeout(volumeHideTimeout);
+  });
+  volumeSliderContainer.addEventListener("mouseleave", () => {
+    volumeHideTimeout = setTimeout(() => {
+      volumeSliderContainer.classList.remove("visible");
+    }, 5000);
+  });
+
+  renderBestiary();
+  renderActiveTimers();
+  renderPendingTimers();
+})();
