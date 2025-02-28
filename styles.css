@@ -1,549 +1,562 @@
-/* =======================
-   Variáveis e Reset Global
-   ======================= */
-   :root {
-    --bg-light: #f0f0f0;
-    --bg-dark: #1f1e1ed0;
-    --primary-color: #2c3e50;
-    --secondary-color: #536976;
-    --hover-color: #BBD2C5;
-    --overlay-opacity: 0.8;
-    --hole-size: 30px;
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-dark);
-    color: var(--bg-light);
-    position: relative;
-    overflow-x: hidden;
-  }
-  
-  /* =======================
-     Background e Overlay (Efeito do Mouse)
-     ======================= */
-  .background-image {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -2;
-    background: url('img/bg.png') no-repeat center center/cover;
-    filter: brightness(0.8);
-  }
-  
-  .gradient {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background-color: rgba(0, 0, 0, var(--overlay-opacity));
-    transition: background-image 0.3s ease;
-    pointer-events: none;
-  }
-  
-  /* =======================
-     Container e Layout
-     ======================= */
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px;
-  }
-  
-  /* =======================
-     Header
-     ======================= */
-  .header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .header__title {
-    font-size: 2rem;
-    color: var(--bg-light);
-    font-family: 'Poppins', sans-serif;
-    font-weight: 300;
-  }
-  
-  /* =======================
-     Main e Seções
-     ======================= */
-  .main {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-  
-  .section {
-    background: transparent;
-  }
-  
-  .section__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  
-  .section__title {
-    font-size: 1.3rem;
-    color: var(--bg-light);
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  /* Caixa de busca: fundo transparente, borda e texto claro */
-  .search-container {
-    display: flex;
-    align-items: center;
-    background: transparent;
-    border-radius: 8px;
-    padding: 8px 12px;
-    width: 100%;
-    max-width: 300px;
-    border: 1px solid var(--bg-light);
-    margin-bottom: 10px;
-  }
-  
-  .search-container i {
-    color: var(--bg-light);
-    margin-right: 8px;
-    font-size: 16px;
-  }
-  
-  .search-container input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--bg-light);
-    font-size: 16px;
-  }
-  
-  .search-container input::placeholder {
-    color: var(--bg-light);
-    opacity: 0.6;
-  }
-  
-  .section__content {
-    margin-bottom: 16px;
-  }
-  
-  /* =======================
-     Grids para Cards
-     ======================= */
-  #bestiary-cards {
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: repeat(2, 180px);
-    grid-auto-columns: 180px;
-    gap: 16px;
-    padding-left: 16px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    height: calc(2 * 200px + 15px);
-  }
-  
-  #active-timers-cards,
-  #pending-timers-cards {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 180px;
-    gap: 16px;
-    padding-left: 24px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    height: 300px;
-    align-items: center;
-  }
-  
-  #bestiary-cards::-webkit-scrollbar,
-  #active-timers-cards::-webkit-scrollbar,
-  #pending-timers-cards::-webkit-scrollbar {
-    height: 8px;
-    background: transparent;
-  }
-  
-  #bestiary-cards::-webkit-scrollbar-thumb,
-  #active-timers-cards::-webkit-scrollbar-thumb,
-  #pending-timers-cards::-webkit-scrollbar-thumb {
-    background: var(--bg-light);
-    border-radius: 8px;
-  }
-  
-  #bestiary-cards,
-  #active-timers-cards,
-  #pending-timers-cards {
-    scrollbar-width: thin;
-    scrollbar-color: var(--bg-light) transparent;
-  }
-  
-  /* =======================
-     Cards Transparentes
-     ======================= */
-  .card {
-    background: rgba(255, 255, 255, 0.055);
-    border: none;
-    border-radius: 8px;
-    padding: 8px;
-    width: 180px;
-    height: 180px;
-    text-align: center;
-    position: relative;
-    transition: transform 300ms ease-out, box-shadow 300ms ease-out;
-    overflow: hidden;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.6);
-    cursor: pointer;
-  }
-  
-  .card:hover {
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-  }
-  
-  .card__content {
-    position: relative;
-    z-index: 1;
-  }
-  
-  .card__img {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-  }
-  
-  /* =======================
-     Estilo para a imagem do mapa em timers ativos
-     ======================= */
-  .card-header .map-thumb {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-left: 8px;
-  }
-  
-  /* =======================
-     Títulos e Botões
-     ======================= */
-  .card__title {
-    font-size: 1rem;
-    font-family: 'Inter', sans-serif;
-    margin-top: 5px;
-    font-weight: 500;
-  }
-  
-  /* Botão de fechar (X) – fixo fora do efeito 3D */
-  .btn-remove {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: transparent;
-    border: none;
-    font-size: 1.2rem;
-    color: #e74c3c;
-    cursor: pointer;
-    z-index: 999;
-    transform: none !important;
-  }
-  
-  /* Botões de reordenação – fundo transparente, apenas setas */
-  .reorder-buttons {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 5px;
+:root {
+  --bg-light: #f0f0f0;
+  --bg-dark: #1f1e1ed0;
+  --primary-color: #2c3e50;
+  --secondary-color: #536976;
+  --hover-color: #BBD2C5;
+  --overlay-opacity: 0.8;
+  --hole-size: 30px;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--bg-light);
+  position: relative;
+  overflow-x: hidden;
+}
+.background-image {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background: url('img/bg.png') no-repeat center center/cover;
+  filter: brightness(0.8);
+}
+.gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-color: rgba(0, 0, 0, var(--overlay-opacity));
+  transition: background-image 0.3s ease;
+  pointer-events: none;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.header__title {
+  font-size: 2rem;
+  color: var(--bg-light);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 300;
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.section {
+  background: transparent;
+}
+.section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.section__title {
+  font-size: 1.3rem;
+  color: var(--bg-light);
+  font-family: 'Poppins', sans-serif;
+}
+.search-container {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  max-width: 300px;
+  border: 1px solid var(--bg-light);
+  margin-bottom: 10px;
+}
+.search-container i {
+  color: var(--bg-light);
+  margin-right: 8px;
+  font-size: 16px;
+}
+.search-container input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--bg-light);
+  font-size: 16px;
+}
+.search-container input::placeholder {
+  color: var(--bg-light);
+  opacity: 0.6;
+}
+.section__content {
+  margin-bottom: 16px;
+}
+#bestiary-cards {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(2, 180px);
+  grid-auto-columns: 180px;
+  gap: 16px;
+  padding-left: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: calc(2 * 200px + 15px);
+}
+#active-timers-cards,
+#pending-timers-cards {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 180px;
+  gap: 16px;
+  padding-left: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 300px;
+  align-items: center;
+}
+#bestiary-cards::-webkit-scrollbar,
+#active-timers-cards::-webkit-scrollbar,
+#pending-timers-cards::-webkit-scrollbar {
+  height: 8px;
+  background: transparent;
+}
+#bestiary-cards::-webkit-scrollbar-thumb,
+#active-timers-cards::-webkit-scrollbar-thumb,
+#pending-timers-cards::-webkit-scrollbar-thumb {
+  background: var(--bg-light);
+  border-radius: 8px;
+}
+#bestiary-cards,
+#active-timers-cards,
+#pending-timers-cards {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-light) transparent;
+}
+.card {
+  background: rgba(255, 255, 255, 0.055);
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  width: 180px;
+  height: 180px;
+  text-align: center;
+  position: relative;
+  transition: transform 300ms ease-out, box-shadow 300ms ease-out;
+  overflow: hidden;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+.card:hover {
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+}
+.card__content {
+  position: relative;
+  z-index: 1;
+}
+.card__img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+.card-header .map-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-left: 8px;
+}
+.card__title {
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  margin-top: 5px;
+  font-weight: 500;
+}
+.btn-remove {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: #e74c3c;
+  cursor: pointer;
+  z-index: 999;
+  transform: none !important;
+}
+.reorder-buttons {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: transparent;
+}
+.reorder-buttons button {
+  background: transparent;
+  border: none;
+  color: var(--bg-light);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.card:hover .reorder-buttons {
+  opacity: 1;
+}
+.active-timer .card-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-right: 8px;
+}
+.active-timer .card-header .card__img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.time-remaining {
+  font-size: 1.2rem;
+  font-family: 'Inter', monospace;
+  font-weight: 600;
+  color: var(--bg-light);
+  margin-bottom: 5px;
+}
+.progress-container {
+  width: 80%;
+  background: #dddddda9;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 0 auto;
+  height: 5px;
+}
+.progress-fill {
+  height: 100%;
+  background: #1fac5ac5;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+.pending-timer {
+  height: 220px;
+}
+.pending-timer p {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  margin: 5px 0 2px;
+  color: var(--bg-light);
+  text-align: center;
+}
+.expired-time {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: var(--bg-light);
+  text-align: center;
+}
+.btn--icon {
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+/* Modal Geral */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+.modal__content {
+  background: var(--bg-dark);
+  margin: 5% auto;
+  padding: 16px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.3s ease-out;
+}
+@keyframes modalFadeIn {
+  from {
     opacity: 0;
-    transition: opacity 0.3s;
-    background: transparent;
+    transform: scale(0.9);
   }
-  
-  .reorder-buttons button {
-    background: transparent;
-    border: none;
-    color: var(--bg-light);
-    cursor: pointer;
-    font-size: 1.2rem;
-  }
-  
-  .card:hover .reorder-buttons {
+  to {
     opacity: 1;
+    transform: scale(1);
   }
-  
-  /* =======================
-     Timers Ativos
-     ======================= */
-  .active-timer .card-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    padding-right: 8px;
-  }
-  
-  .active-timer .card-header .card__img {
-    width: 90px;
-    height: 90px;
-    object-fit: contain ;
-    border-radius: 8px;
-  }
-  
-  .time-remaining {
-    font-size: 1.2rem;
-    font-family: 'Inter', monospace;
-    font-weight: 600;
-    color: var(--bg-light);
-    margin-bottom: 5px;
-  }
-  
-  .progress-container {
-    width: 80%;
-    background: #dddddda9;
-    border-radius: 16px;
-    overflow: hidden;
-    margin: 0 auto;
-    height: 5px;
-  }
-  
-  .progress-fill {
-    height: 100%;
-    background: #1fac5ac5;
-    width: 0%;
-    transition: width 0.5s ease;
-  }
-  
-  /* =======================
-     Timers Pendentes
-     ======================= */
-  .pending-timer {
-    /* Aumentando um pouco a altura para "prontos para abate" */
-    height: 220px;
-  }
-  
-  .pending-timer p {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    margin: 5px 0 2px;
-    color: var(--bg-light);
-    text-align: center;
-  }
-  
-  .expired-time {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    color: var(--bg-light);
-    text-align: center;
-  }
-  
-  /* =======================
-     Botões do tipo Icon (ex: vassoura)
-     ======================= */
-  .btn--icon {
-    background: transparent;
-    border: none;
-    outline: none;
-    cursor: pointer;
-  }
-  
-  /* =======================
-     Modal
-     ======================= */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-  }
-  
-  .modal__content {
-    background: var(--bg-dark);
-    margin: 5% auto;
-    padding: 16px;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    animation: modalFadeIn 0.3s ease-out;
-  }
-  
-  @keyframes modalFadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
-  .modal__close {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 1.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #e74c3c;
-  }
-  
-  .modal__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
-  }
-  
-  .modal__map {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    border: 1px solid var(--bg-light);
-    border-radius: 8px;
-    padding: 10px;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  
-  .modal__map:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .modal__map img {
-    width: 80px;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 5px;
-  }
-  
-  .modal__map .map-name {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    margin: 5px 0 2px;
-    color: var(--bg-light);
-    text-align: center;
-  }
-  
-  .modal__map .map-time {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
-    color: var(--bg-light);
-    text-align: center;
-  }
-  
-  .modal__actions {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
-  }
-  
-  .modal__actions .btn {
-    padding: 5px 10px;
-    font-size: 0.9rem;
-  }
-  .modal__title {
-    margin-bottom: 8px; 
-  }
-  
-  
-  /* =======================
-     Novo Menu de Configurações (Volume)
-     ======================= */
-  .settings-container {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 5px 10px;
-    border-radius: 16px;
-    backdrop-filter: blur(5px);
-    transition: all 0.3s ease;
-    z-index: 400;
-  }
-  
-  .settings-icon {
-    position: relative;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--bg-light);
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-  
-  .settings-icon:hover {
-    color: var(--hover-color);
-  }
-  
-  /* Posiciona o slider ao lado do ícone (à direita) com efeito de entrada/saída */
-  .volume-slider-container {
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    margin-right: 4px;
-    transform: translate(10px, -50%);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  
-  .volume-slider-container.visible {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translate(0, -50%);
-  }
-  
-  /* =======================
-     Ícone de Reset Separado
-     ======================= */
-  .reset-icon-container {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    z-index: 400;
-  }
-  
-  .reset-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: var(--bg-light);
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-  
-  .reset-btn:hover {
-    color: var(--hover-color);
-  }
-  
-  /* =======================
-     Classe para a vassoura de limpar os prontos para abate
-     ======================= */
-  .clear-pending-icon {
-    color: var(--bg-light);
-    font-size: 1rem;
-    margin-left: 4px;
-  }
-  
+}
+.modal__close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #e74c3c;
+}
+.modal__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+.modal__map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border: 1px solid var(--bg-light);
+  border-radius: 8px;
+  padding: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.modal__map:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.modal__map img {
+  width: 80px;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 5px;
+}
+.modal__map .map-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  margin: 5px 0 2px;
+  color: var(--bg-light);
+  text-align: center;
+}
+.modal__map .map-time {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: var(--bg-light);
+  text-align: center;
+}
+.modal__actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+.modal__actions .btn {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+.modal__title {
+  margin-bottom: 12px;
+  font-size: 1.2rem;
+  text-align: center;
+  font-weight: 600;
+  word-wrap: break-word;
+  margin-top: 16px;
+}
+
+/* Settings */
+.settings-container {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 10px;
+  border-radius: 16px;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  z-index: 400;
+}
+.settings-icon {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--bg-light);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.settings-icon:hover {
+  color: var(--hover-color);
+}
+.volume-slider-container {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  right: 100%;
+  top: 50%;
+  gap: 8px;
+  margin-right: 4px;
+  transform: translate(10px, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.volume-slider-container.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(0, -50%);
+}
+/* Reset Icon */
+.reset-icon-container {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 400;
+}
+.reset-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--bg-light);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.reset-btn:hover {
+  color: var(--hover-color);
+}
+.clear-pending-icon {
+  color: var(--bg-light);
+  font-size: 1rem;
+  margin-left: 4px;
+}
+.play-sound-btn {
+  background: none;
+  border: none;
+  color: var(--bg-light);
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: color 0.2s;
+}
+.play-sound-btn:hover {
+  color: var(--hover-color);
+}
+/* Donation Icon */
+.donation-icon-container {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 400;
+}
+.donation-btn {
+  background: none;
+  border: none;
+  font-size: 2.5rem;
+  color: var(--bg-light);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.donation-btn:hover {
+  color: var(--hover-color);
+}
+/* Modal de Doação - Estilização Atualizada */
+#donation-modal {
+  display: none; /* Oculto por padrão */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#donation-modal .modal__content {
+  background-color: var(--bg-dark);
+  border-radius: 8px;
+  padding: 30px 20px 40px;
+  max-width: 550px;
+  width: 100%;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+/* Botão de fechar no Modal de Doação */
+#donation-modal .modal__close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #e74c3c;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+#donation-modal .modal__close:hover {
+  color: #c0392b;
+}
+/* QR Code do Modal de Doação */
+.donation-qr {
+  width: 450px;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px;
+  border: 2px solid var(--hover-color);
+  border-radius: 8px;
+}
+/* Container do código de doação e botão copiar */
+.donation-key {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 15px;
+}
+/* Input com o código de doação */
+#donation-code {
+  font-size: 0.7rem;
+  padding: 8px;
+  border: 1px solid var(--bg-light);
+  border-radius: 4px;
+  width: 60%;
+  text-align: center;
+  background: #ffffff00;
+  color: #ffffff;
+  transition: border-color 0.3s ease;
+}
+#donation-code:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+/* Botão de copiar */
+.copy-btn {
+  padding: 10px 15px;
+  font-size: 1rem;
+  background-color: var(--primary-color);
+  border: none;
+  color: var(--bg-light);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.copy-btn:hover {
+  background-color: var(--hover-color);
+}
