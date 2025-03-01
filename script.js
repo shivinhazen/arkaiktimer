@@ -3,7 +3,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     // Dados dos monstros
     const monstersData = [
-      { "name": "Dragão Mutante", "time": 1, "instances": 3, "location": "cmd_fild03" },
+      { "name": "Dragão Mutante", "time": 20, "instances": 3, "location": "cmd_fild03" },
       { "name": "Dragão Mutante", "time": 400, "instances": 3, "location": "hu_fild05" },
       { "name": "Eclipse", "time": 30, "instances": 1, "location": "prt_fild02" },
       { "name": "Eclipse", "time": 32, "instances": 1, "location": "prt_maze03" },
